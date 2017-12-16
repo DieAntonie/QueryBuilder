@@ -17,6 +17,14 @@ class Query {
 		$this->mysqli = $mysqli;
 	}
 
+	function clear() {
+		//clears all Query object data
+		$this->sql_command = '';
+		$this->sql_info = '';
+		$this->datatypes = '';
+		$this->data = array();
+	}
+
 	/*
 		****SELECT****
 	*/
@@ -53,12 +61,14 @@ class Query {
 		* If it is the first condition, $logic is ignored 
 		*/
 
-		$this->datatypes = $this->datatypes . $type;
-		$this->data[] = $value;
-
-		if ($this->sql_info == "") {
+		if (!strpos($this->sql_info, "WHERE")) {
 			$this->sql_info = "WHERE $column $condition ?"; 
+			$this->data = array();
+			$this->data[] = $value;
+			$this->datatypes = $type;
 		} else {
+			$this->datatypes = $this->datatypes . $type;
+			$this->data[] = $value;
 			$this->sql_info = $this->sql_info . " $logic $column $condition ?";
 		}
 
@@ -141,7 +151,12 @@ $dbname = "liftapp";
 $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
-$query->insert('lifts', 'weight', 'reps')->values('ii', 5, 5)->exec_insert();
+
+
+var_dump($query->select('lifts', '*')->where('user', '=', 0, 'i')->get());
+var_dump($query);
+$query->clear();
+var_dump($query);
 
 
 
