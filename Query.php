@@ -48,9 +48,7 @@ class Query {
 		/*
 		* Append conditions for WHERE statements.
 		* Ex: WHERE count > 0
-		*
 		* $type is to be either 'i' for int, 's', for string, 'd' for double, or 'b' for blob
-		*
 		* By default, $logic is 'AND'. User can specify how they want to connect conditions. 
 		* If it is the first condition, $logic is ignored 
 		*/
@@ -101,7 +99,36 @@ class Query {
 
 		$this->sql_command = $sql_command;
 
-		echo $this->sql_command;
+		return $this;
+	}
+
+	function values($datatypes, ...$values) {
+		$sql_info = "VALUES (?";
+		//reset data array in case it has been used
+		$this->data = array();
+		$this->data[] = $values[0];
+		//set datatypes to user defined types
+		$this->datatypes = $datatypes;
+
+		for ($i=1; $i < count($values); $i++) { 
+			$this->data[] = $values[$i];
+			$sql_info = $sql_info . ", ?";
+		}
+
+		$sql_info = $sql_info . ")";
+
+		$this->sql_info = $sql_info;
+
+		return $this;
+
+	}
+
+	function exec_insert() {
+		$sql = "$this->sql_command $this->sql_info";
+		$stmt = $this->mysqli->prepare($sql);
+		$stmt->bind_param($this->datatypes, ...$this->data);
+
+		return $stmt->execute();
 	}
 
 }
@@ -114,7 +141,7 @@ $dbname = "liftapp";
 $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
-$query->insert('lifts', 'weight', 'reps');
+$query->insert('lifts', 'weight', 'reps')->values('ii', 5, 5)->exec_insert();
 
 
 
