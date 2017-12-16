@@ -13,6 +13,10 @@ class Query {
 		$this->mysqli = $mysqli;
 	}
 
+	/*function __construct($servername, $username, $password, $dbname) {
+		$this->mysqli = new mysqli($servername, $username, $password, $dbname);
+	}*/
+
 	function set_mysqli($mysqli) {
 		$this->mysqli = $mysqli;
 	}
@@ -24,11 +28,10 @@ class Query {
 
 		$sql_command = "SELECT ";
 		if (count($columns) > 1) {
-			$sql_command = $sql_command . '(' . $columns[0];
+			$sql_command = $sql_command . $columns[0];
 			for ($i=1; $i < count($columns); $i++) { 
 				$sql_command = $sql_command . ", " . $columns[$i];
 			}
-			$sql_command = $sql_command . ')';
 		} else {
 			$sql_command = $sql_command . $columns[0];
 		}
@@ -55,6 +58,26 @@ class Query {
 		return $this;
 	}
 
+	function execute_query() {
+		$sql = "$this->sql_command $this->sql_info";
+		echo $sql;
+		$stmt = $this->mysqli->prepare($sql);
+		$stmt->bind_param($this->datatypes, ...$this->data);
+		$stmt->execute();
+
+		//build array with generic data
+		$result = $stmt->get_result();
+		$data = array();
+		while ($row = $result->fetch_assoc()) {
+			$data[] = $row;
+		}
+
+		//return the array
+		echo json_encode($data);
+
+
+	}
+
 }
 
 $servername = "localhost";
@@ -65,6 +88,32 @@ $dbname = "liftapp";
 $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
-$query->select('lifts', 'weight', 'reps')->where('user', '=', 1, 'i')->where('id', '>', 0, 'i');
+$query->select('lifts', 'user', 'weight', 'reps')->where('user', '=', 1, 'i')->where('id', '>', 0, 'i', 'OR')->execute_query();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
