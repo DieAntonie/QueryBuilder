@@ -75,6 +75,19 @@ class Query {
 		return $this;
 	}
 
+	function order_by($column, $order) {
+		//order query by $column in order of $order
+		$this->sql_info = $this->sql_info . " ORDER BY $column $order"; 
+
+		return $this;
+	}
+
+	function limit($n) {
+		$this->sql_info = $this->sql_info . " LIMIT $n";
+
+		return $this;
+	}
+
 	function get() {
 		/*
 		Returns array of selected rows
@@ -152,11 +165,12 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
+$myData = $query->select('users', '*')
+				->order_by('id', 'DESC')
+				->limit(5)
+				->get();
 
-var_dump($query->select('lifts', '*')->where('user', '=', 0, 'i')->get());
-var_dump($query);
-$query->clear();
-var_dump($query);
+var_dump($myData);
 
 
 

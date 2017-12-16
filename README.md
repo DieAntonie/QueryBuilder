@@ -13,7 +13,7 @@ $myData = $query->select('users', 'username', 'password')->where('name', '=', 'A
 
 The corresponding MySQL statement that the above code builds is:
 ```mysql
-SELECT username, password FROM users where name = 'Austin Bailey';
+SELECT username, password FROM users WHERE name = 'Austin Bailey';
 ```
 select(): takes parameter 1 as the table name, and any following parameters as the columns the user whishes to select. 
 where(): takes parameter 1 as column name, parameter 2 as condition, parameter 3 as the value to compare to, and parameter 4 as the datatype of parameter 3. 'i' for integer, 's' for string, 'd' for double, and 'b' for blob. Additionally, parameter 5 can be used when chaining WHERE conditions together. By default, it is "AND", or it is ignored when there is only one WHERE statement:
@@ -28,7 +28,7 @@ $myData = $query->get();
 
 The corresponding MySQL statement that the above code builds is:
 ```mysql
-SELECT username, password FROM users where name = 'Austin Bailey OR age > 21';
+SELECT username, password FROM users WHERE name = 'Austin Bailey' OR age > 21;
 ```
 
 #### INSERT queries: ####
