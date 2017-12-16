@@ -45,7 +45,15 @@ class Query {
 	}
 
 	function where($column, $condition, $value, $type, $logic = "AND") {
-
+		/*
+		* Append conditions for WHERE statements.
+		* Ex: WHERE count > 0
+		*
+		* $type is to be either 'i' for int, 's', for string, 'd' for double, or 'b' for blob
+		*
+		* By default, $logic is 'AND'. User can specify how they want to connect conditions. 
+		* If it is the first condition, $logic is ignored 
+		*/
 		$this->datatypes = $this->datatypes . $type;
 		$this->data[] = $value;
 
@@ -58,9 +66,12 @@ class Query {
 		return $this;
 	}
 
-	function execute_query() {
+	function get() {
+		/*
+		Returns array of selected rows
+		*/
+
 		$sql = "$this->sql_command $this->sql_info";
-		echo $sql;
 		$stmt = $this->mysqli->prepare($sql);
 		$stmt->bind_param($this->datatypes, ...$this->data);
 		$stmt->execute();
@@ -73,7 +84,7 @@ class Query {
 		}
 
 		//return the array
-		echo json_encode($data);
+		return $data;
 
 
 	}
@@ -88,7 +99,8 @@ $dbname = "liftapp";
 $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
-$query->select('lifts', 'user', 'weight', 'reps')->where('user', '=', 1, 'i')->where('id', '>', 0, 'i', 'OR')->execute_query();
+$query->select('lifts', 'user', 'weight', 'reps')->where('user', '=', 1, 'i');
+var_dump($query->get());
 
 
 
