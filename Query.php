@@ -13,13 +13,13 @@ class Query {
 		$this->mysqli = $mysqli;
 	}
 
-	/*function __construct($servername, $username, $password, $dbname) {
-		$this->mysqli = new mysqli($servername, $username, $password, $dbname);
-	}*/
-
 	function set_mysqli($mysqli) {
 		$this->mysqli = $mysqli;
 	}
+
+	/*
+		****SELECT****
+	*/
 
 	function select($table, ...$columns) {
 		/*
@@ -54,6 +54,7 @@ class Query {
 		* By default, $logic is 'AND'. User can specify how they want to connect conditions. 
 		* If it is the first condition, $logic is ignored 
 		*/
+
 		$this->datatypes = $this->datatypes . $type;
 		$this->data[] = $value;
 
@@ -76,17 +77,31 @@ class Query {
 		$stmt->bind_param($this->datatypes, ...$this->data);
 		$stmt->execute();
 
-		//build array with generic data
 		$result = $stmt->get_result();
 		$data = array();
 		while ($row = $result->fetch_assoc()) {
 			$data[] = $row;
 		}
 
-		//return the array
 		return $data;
 
+	}
 
+	/*
+		****INSERT****
+	*/
+
+	function insert($table, ...$columns) {
+		$sql_command = "INSERT INTO $table ($columns[0]";
+		for ($i=1; $i < count($columns); $i++) { 
+			$sql_command = $sql_command . ", " . $columns[$i];
+		}
+
+		$sql_command = $sql_command . ")";
+
+		$this->sql_command = $sql_command;
+
+		echo $this->sql_command;
 	}
 
 }
@@ -99,8 +114,7 @@ $dbname = "liftapp";
 $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
-$query->select('lifts', 'user', 'weight', 'reps')->where('user', '=', 1, 'i');
-var_dump($query->get());
+$query->insert('lifts', 'weight', 'reps');
 
 
 
