@@ -211,7 +211,6 @@ class Query {
 
 	private function exec_delete() {
 
-
 		$stmt = $this->mysqli->prepare($this->sql);
 
 		$datatypes = '';
@@ -220,9 +219,21 @@ class Query {
 			$datatypes = $datatypes . $this->datatypes[$field];
 		}
 
-		$stmt->bind_param($datatypes, $this->data);
+		$stmt->bind_param($datatypes, ...$this->data);
 
 		return $stmt->execute();
+	}
+
+	/* **** UPDATE **** */
+
+	function update($column, $value) {
+
+		$this->command = 'u';
+		$this->sql = "UPDATE $column = ?";
+		$this->data[] = $value;
+		$this->fields[] = $column;
+
+		//todo
 	}
 	/* **** EXECUTE **** */
 
@@ -245,6 +256,7 @@ $query = new Query($mysqli);
 
 $data = $query->table('lifts')
 			->delete('reps', '=', 1)
+			->or_where('weight', '<', 100.0)
 			->execute();
 
 var_dump($data);
