@@ -20,10 +20,12 @@ class Query {
 
 	public function clear() {
 		//clears all Query object data
+		$this->table = '';
 		$this->sql_command = '';
 		$this->sql_info = '';
-		$this->datatypes = '';
+		$this->datatypes = array();
 		$this->data = array();
+		$this->fields = array();
 	}
 
 	public function table($table) {
@@ -63,7 +65,6 @@ class Query {
 
 			$this->datatypes[$row['Field']] = $type;
 		}
-
 	}
 
 	/*
@@ -72,8 +73,6 @@ class Query {
 
 	public function where($column, $condition, $value) {
 		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
-
-		$this->clear();
 
 		$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
 
@@ -135,7 +134,6 @@ class Query {
 
 		$stmt->bind_param($datatypes, ...$this->data);
 		$stmt->execute();
-
 		$result = $stmt->get_result();
 		$data = array();
 		while ($row = $result->fetch_assoc()) {
@@ -152,15 +150,12 @@ class Query {
 
 	public function insert($columns, $values) {
 
-		$this->clear();
-
 		$sql = "INSERT INTO $this->table ($columns[0]";
 
 		$this->fields[] = $columns[0];
 
 		for ($i=1; $i < count($columns); $i++) { 
 			$sql = $sql . ", " . $columns[$i];
-
 			$this->fields[] = $columns[$i];
 		}
 
@@ -175,18 +170,22 @@ class Query {
 		}
 
 		$sql = $sql . ')';
-
-		var_dump($sql);
-
 		$this->sql = $sql;
 
 		return $this;
 	}
 
 	public function exec_insert() {
-		$sql = "$this->sql_command $this->sql_info";
-		$stmt = $this->mysqli->prepare($sql);
-		$stmt->bind_param($this->datatypes, ...$this->data);
+
+		$stmt = $this->mysqli->prepare($this->sql);
+
+		$datatypes = '';
+		
+		foreach ($this->fields as $field) {
+			$datatypes = $datatypes . $this->datatypes[$field];
+		}
+
+		$stmt->bind_param($datatypes, ...$this->data);
 
 		return $stmt->execute();
 	}
@@ -203,7 +202,10 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 $query = new Query($mysqli);
 
 $data = $query->table('lifts')
-			->insert(array('weight', 'reps'), array(100, 1));
+			->insert(array('weight', 'reps'), array(100, 1))
+			->exec_insert();
+
+var_dump($data);
 
 
 
