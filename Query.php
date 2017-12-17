@@ -3,11 +3,12 @@
 class Query {
 
 	private $mysqli = null;
-	private $sql = "";
+	private $sql = '';
 	private $datatypes = array();
 	private $data = array();
 	private $fields = array();
-	private $table = "";
+	private $table = '';
+	private $command = '';
 
 	public function __construct($mysqli = null) {
 		// construct with mysqli object
@@ -26,6 +27,7 @@ class Query {
 		$this->datatypes = array();
 		$this->data = array();
 		$this->fields = array();
+		$this->command = '';
 	}
 
 	public function table($table) {
@@ -67,9 +69,7 @@ class Query {
 		}
 	}
 
-	/*
-		****SELECT****
-	*/
+	/* **** SELECT **** */
 
 	public function where($column, $condition, $value) {
 		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
@@ -78,6 +78,7 @@ class Query {
 
 		$this->data[] = $value;
 		$this->fields[] = $column;
+		$this->command = "s";
 
 		return $this;
 	}
@@ -117,7 +118,7 @@ class Query {
 		return $this;
 	}
 
-	public function get() {
+	private function exec_select() {
 		// Returns array of selected rows
 		
 		$sql = $this->sql;
@@ -144,11 +145,11 @@ class Query {
 
 	}
 
-	/*
-		****INSERT****
-	*/
-
+	/* **** INSERT **** */
+	
 	public function insert($columns, $values) {
+
+		$this->command = 'i';
 
 		$sql = "INSERT INTO $this->table ($columns[0]";
 
@@ -175,7 +176,7 @@ class Query {
 		return $this;
 	}
 
-	public function exec_insert() {
+	private function exec_insert() {
 
 		$stmt = $this->mysqli->prepare($this->sql);
 
@@ -190,6 +191,15 @@ class Query {
 		return $stmt->execute();
 	}
 
+	/* **** EXECUTE **** */
+
+	public function execute() {
+		if ($this->command == 's')  return $this->exec_select();
+		else if ($this->command == 'i') return $this->exec_insert();
+	}
+
+
+
 }
 
 $servername = "localhost";
@@ -203,7 +213,11 @@ $query = new Query($mysqli);
 
 $data = $query->table('lifts')
 			->insert(array('weight', 'reps'), array(100, 1))
-			->exec_insert();
+			->execute();
+
+var_dump($data);
+
+$data = $query->table('users')->where('name', '=', 'Austin Bailey')->execute();
 
 var_dump($data);
 
