@@ -2,12 +2,12 @@
 
 class Query {
 
-	public $mysqli = null;
-	public $sql_command = "";
-	public $sql_info = "";
-	public $datatypes = array();
-	public $data = array();
-	public $table = "";
+	private $mysqli = null;
+	private $sql = "";
+	private $datatypes = array();
+	private $data = array();
+	private $fields = array();
+	private $table = "";
 
 	public function __construct($mysqli = null) {
 		// construct with mysqli object
@@ -68,82 +68,70 @@ class Query {
 		****SELECT****
 	*/
 
-	public function select($table, ...$columns) {
-		/*
-		* Resets and sets the command to SELECT $columns FROM $table
-		*/
-
-		$sql_command = "SELECT ";
-		if (count($columns) > 1) {
-			$sql_command = $sql_command . $columns[0];
-			for ($i=1; $i < count($columns); $i++) { 
-				$sql_command = $sql_command . ", " . $columns[$i];
-			}
-		} else {
-			$sql_command = $sql_command . $columns[0];
-		}
-
-		$sql_command = $sql_command . " FROM " . $table;
-
-		$this->sql_command = $sql_command;
-
-		return $this;
-
+	public function select() {
+		
 	}
 
-	public function where($column, $condition, $value, $type, $logic = "AND") {
-		/*
-		Append conditions for WHERE statements.
-		Ex: WHERE count > 0
-		$type is to be either 'i' for int, 's', for string, 'd' for double, or 'b' for blob
-		By default, $logic is 'AND'. User can specify how they want to connect conditions. 
-		If it is the first condition, $logic is ignored 
-		*/
+	public function where($column, $condition, $value) {
+		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
+		$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
 
-		if (!(strpos($this->sql_info, "WHERE") > -1)) {
-			$this->sql_info = "WHERE $column $condition ?"; 
-			$this->data = array();
-			$this->data[] = $value;
-			$this->datatypes = $type;
-		} else {
-			$this->datatypes = $this->datatypes . $type;
-			$this->data[] = $value;
-			$this->sql_info = $this->sql_info . " $logic $column $condition ?";
-		}
+		$this->data[] = $value;
+		$this->fields[] = $column;
 
 		return $this;
 	}
 
 	public function or_where() {
+		// Append an additional WHERE clause with OR connection
+		$this->sql = $this->sql . " OR WHERE $column $condition ?";
 
+		$this->data[] = $value;
+		$this->fields[] = $column;
+
+		return $this;
 	}
 
 	public function and_where() {
+		// Append an additional WHERE clause with AND connection
+		$this->sql = $this->sql . " AND WHERE $column $condition ?";
+
+		$this->data[] = $value;
+		$this->fields[] = $column;
+
+		return $this;
 
 	}
 
 	public function order_by($column, $order) {
-		//order query by $column in order of $order
-		$this->sql_info = $this->sql_info . " ORDER BY $column $order"; 
+		// Order query by $column in order of $order
+		$this->sql = $this->sql . " ORDER BY $column $order"; 
 
 		return $this;
 	}
 
 	public function limit($n) {
-		$this->sql_info = $this->sql_info . " LIMIT $n";
+		// Limit query to $n results max
+		$this->sql = $this->sql . " LIMIT $n";
 
 		return $this;
 	}
 
 	public function get() {
-		/*
-		Returns array of selected rows
-		*/
+		// Returns array of selected rows
+		
 
-		$sql = "$this->sql_command $this->sql_info";
+		$sql = $this->sql;
 		var_dump($sql);
 		$stmt = $this->mysqli->prepare($sql);
-		$stmt->bind_param($this->datatypes, ...$this->data);
+
+		$datatypes = '';
+		
+		foreach ($this->fields as $field) {
+			$datatypes = $datatypes . $this->datatypes[$field];
+		}
+
+		$stmt->bind_param($datatypes, ...$this->data);
 		$stmt->execute();
 
 		$result = $stmt->get_result();
@@ -220,7 +208,9 @@ $query = new Query($mysqli);
 				->limit(5)
 				->get();*/
 
-$query->table('lifts');
+$data = $query->table('lifts')->where('reps', '>', 5)->get();
+
+var_dump($data);
 
 
 
