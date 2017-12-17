@@ -8,43 +8,40 @@ Querybuilder is a small library to quickly and easily build MySQL queries with P
 
 ```php
 $query = new Query($mysqli);
-$myData = $query->select('users', 'username', 'password')->where('name', '=', 'Austin Bailey', 's')->get();
+$myData = $query->table('users')->execute();
 ```
 
 The corresponding MySQL statement that the above code builds is:
 ```mysql
-SELECT username, password FROM users WHERE name = 'Austin Bailey';
+SELECT * FROM users;
 ```
-select(): takes parameter 1 as the table name, and any following parameters as the columns the user whishes to select. 
-where(): takes parameter 1 as column name, parameter 2 as condition, parameter 3 as the value to compare to, and parameter 4 as the datatype of parameter 3. 'i' for integer, 's' for string, 'd' for double, and 'b' for blob. Additionally, parameter 5 can be used when chaining WHERE conditions together. By default, it is "AND", or it is ignored when there is only one WHERE statement:
-get(): returns the query built in the previous functions
-
+The table() function sets the table to the parameter, and a table function followed by an execute selects all data in the table. The execute() function returns the array of data from the MySQL statement. Users can also append WHERE conditions using where(), or_where(), and and_where(). It is important that where() is the first appended, like below:
 
 ```php
 $query = new Query($mysqli);
-$query->select('users', 'username', 'password')->where('name', '=', 'Austin Bailey', 's')->where('age', '>', 21, 'i', 'OR');
-$myData = $query->get();
+$myData = $query->table('users')->where('name', '=', 'Austin')->or_where('age', '>', 20)->execute();
 ```
 
 The corresponding MySQL statement that the above code builds is:
 ```mysql
-SELECT username, password FROM users WHERE name = 'Austin Bailey' OR age > 21;
+SELECT * FROM users WHERE name = 'Austin' OR age > 20;
 ```
+
+where(), or_where(), and and_where() each take 3 parameters: column, condition, value. where() appends to the statement 'WHERE column condition value'. or_where and and_where append an OR or AND condition respectively.
 
 #### INSERT queries: ####
 
 ```php
 $query = new Query($mysqli);
-$query->insert('users', 'name', 'age')->values('si', 'Austin Bailey', 21)->exec_insert();
+$query->table('users')->insert(array('name', 'age'), array('Austin', 21))->execute();
 ```
 
 The corresponding MySQL statement that this above code builds is:
 ```mysql
-INSERT INTO users (name, age) VALUES ('Austin Bailey', 21);
+INSERT INTO users (name, age) VALUES ('Austin', 21);
 ```
-insert(): takes parameter 1 as the parameter name, and any folloing parameters as the columns in which to insert. 
-values(): parameter 1 is a string where each letter represents the data type of it's corresponding value in the following parameters. In this case, 's' pairs with 'Austin Bailey' and 'i' pairs with 21.
-exec_insert(): returns boolean value representing whether of not the query was successful.
+insert() takes parameter 1 as the array of columns which will have data inserted into them, and parameter 2 as the values that will go into their respective columns. It is important that the column and value indexes match. 
+execute() will return a boolean true or false on success or failure of the query.
 
 ## In Development ##
 
@@ -52,5 +49,6 @@ exec_insert(): returns boolean value representing whether of not the query was s
 - [X] Insert queries
 - [ ] Delete queries
 - [ ] Update queries
+- [ ] Error reporting
 
 And more to come.

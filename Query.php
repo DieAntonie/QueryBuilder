@@ -35,6 +35,8 @@ class Query {
 		$this->clear();
 
 		$this->table = $table;
+		//set command to select by default
+		$this->command = "s";
 
 		$this->getTypes($table);
 
@@ -197,8 +199,6 @@ class Query {
 		if ($this->command == 's')  return $this->exec_select();
 		else if ($this->command == 'i') return $this->exec_insert();
 	}
-
-
 
 }
 
