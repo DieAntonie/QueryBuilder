@@ -85,6 +85,8 @@ class Query {
 		return $this;
 	}
 
+	/* or_where and and_where can both be used to append conditions to DELETE queries */
+
 	public function or_where($column, $condition, $value) {
 		// Append an additional WHERE clause with OR connection
 		$this->sql = $this->sql . " OR $column $condition ?";
@@ -193,11 +195,41 @@ class Query {
 		return $stmt->execute();
 	}
 
+	/* **** DELETE **** */
+
+	public function delete($column, $condition, $value) {
+
+		$this->sql = "DELETE FROM $this->table WHERE $column $condition ?";
+
+		$this->data[] = $value;
+		$this->fields[] = $column;
+		$this->command = "d";
+
+		return $this;
+
+	}
+
+	private function exec_delete() {
+
+
+		$stmt = $this->mysqli->prepare($this->sql);
+
+		$datatypes = '';
+
+		foreach ($this->fields as $field) {
+			$datatypes = $datatypes . $this->datatypes[$field];
+		}
+
+		$stmt->bind_param($datatypes, $this->data);
+
+		return $stmt->execute();
+	}
 	/* **** EXECUTE **** */
 
 	public function execute() {
 		if ($this->command == 's')  return $this->exec_select();
 		else if ($this->command == 'i') return $this->exec_insert();
+		else if ($this->command == 'd') return $this->exec_delete();
 	}
 
 }
@@ -212,14 +244,11 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 $query = new Query($mysqli);
 
 $data = $query->table('lifts')
-			->insert(array('weight', 'reps'), array(100, 1))
+			->delete('reps', '=', 1)
 			->execute();
 
 var_dump($data);
 
-$data = $query->table('users')->where('name', '=', 'Austin Bailey')->execute();
-
-var_dump($data);
 
 
 
