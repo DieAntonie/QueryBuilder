@@ -68,10 +68,6 @@ class Query {
 		****SELECT****
 	*/
 
-	public function select() {
-		
-	}
-
 	public function where($column, $condition, $value) {
 		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
 		$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
@@ -82,9 +78,9 @@ class Query {
 		return $this;
 	}
 
-	public function or_where() {
+	public function or_where($column, $condition, $value) {
 		// Append an additional WHERE clause with OR connection
-		$this->sql = $this->sql . " OR WHERE $column $condition ?";
+		$this->sql = $this->sql . " OR $column $condition ?";
 
 		$this->data[] = $value;
 		$this->fields[] = $column;
@@ -92,9 +88,9 @@ class Query {
 		return $this;
 	}
 
-	public function and_where() {
+	public function and_where($column, $condition, $value) {
 		// Append an additional WHERE clause with AND connection
-		$this->sql = $this->sql . " AND WHERE $column $condition ?";
+		$this->sql = $this->sql . " AND $column $condition ?";
 
 		$this->data[] = $value;
 		$this->fields[] = $column;
@@ -122,7 +118,9 @@ class Query {
 		
 
 		$sql = $this->sql;
-		var_dump($sql);
+
+		if ($sql == "") $sql = "SELECT * FROM $this->table";
+
 		$stmt = $this->mysqli->prepare($sql);
 
 		$datatypes = '';
@@ -201,14 +199,8 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-/*$myData = $query->select('users', '*')
-				->where('name', '=', 'Austin Bailey', 's')
-				->where('id', '=', "egag", 's', 'OR')
-				->order_by('id', 'DESC')
-				->limit(5)
-				->get();*/
-
-$data = $query->table('lifts')->where('reps', '>', 5)->get();
+$data = $query->table('lifts')
+			->get();
 
 var_dump($data);
 
