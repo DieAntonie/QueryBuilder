@@ -24,10 +24,12 @@ class Query {
 		$this->sql_info = '';
 		$this->datatypes = '';
 		$this->data = array();
-		$this->table = '';
 	}
 
 	public function table($table) {
+
+		$this->clear();
+
 		$this->table = $table;
 
 		$this->getTypes($table);
@@ -70,6 +72,9 @@ class Query {
 
 	public function where($column, $condition, $value) {
 		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
+
+		$this->clear();
+
 		$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
 
 		$this->data[] = $value;
@@ -116,7 +121,6 @@ class Query {
 	public function get() {
 		// Returns array of selected rows
 		
-
 		$sql = $this->sql;
 
 		if ($sql == "") $sql = "SELECT * FROM $this->table";
@@ -146,39 +150,38 @@ class Query {
 		****INSERT****
 	*/
 
-	public function insert($table, ...$columns) {
-		$sql_command = "INSERT INTO $table ($columns[0]";
+	public function insert($columns, $values) {
+
+		$this->clear();
+
+		$sql = "INSERT INTO $this->table ($columns[0]";
+
+		$this->fields[] = $columns[0];
+
 		for ($i=1; $i < count($columns); $i++) { 
-			$sql_command = $sql_command . ", " . $columns[$i];
+			$sql = $sql . ", " . $columns[$i];
+
+			$this->fields[] = $columns[$i];
 		}
 
-		$sql_command = $sql_command . ")";
+		$sql = $sql . ') VALUES (? ';
 
-		$this->sql_command = $sql_command;
+		$this->data[] = $values[0];
+
+		for ($i=1; $i < count($values); $i++) { 
+			$sql = $sql . ", ?";
+
+			$this->data[] = $values[$i];
+		}
+
+		$sql = $sql . ')';
+
+		var_dump($sql);
+
+		$this->sql = $sql;
 
 		return $this;
 	}
-
-	/*function values($datatypes, ...$values) {
-		$sql_info = "VALUES (?";
-		//reset data array in case it has been used
-		$this->data = array();
-		$this->data[] = $values[0];
-		//set datatypes to user defined types
-		$this->datatypes = $datatypes;
-
-		for ($i=1; $i < count($values); $i++) { 
-			$this->data[] = $values[$i];
-			$sql_info = $sql_info . ", ?";
-		}
-
-		$sql_info = $sql_info . ")";
-
-		$this->sql_info = $sql_info;
-
-		return $this;
-
-	}*/
 
 	public function exec_insert() {
 		$sql = "$this->sql_command $this->sql_info";
@@ -200,9 +203,7 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 $query = new Query($mysqli);
 
 $data = $query->table('lifts')
-			->get();
-
-var_dump($data);
+			->insert(array('weight', 'reps'), array(100, 1));
 
 
 
