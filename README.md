@@ -27,7 +27,14 @@ The corresponding MySQL statement that the above code builds is:
 SELECT * FROM users WHERE name = 'Austin' OR age > 20;
 ```
 
-where(), or_where(), and and_where() each take 3 parameters: column, condition, value. where() appends to the statement 'WHERE column condition value'. or_where and and_where append an OR or AND condition respectively.
+where(), or_where(), and and_where() each take 3 parameters: column, condition, value. where() appends to the statement 'WHERE column condition value'. or_where and and_where append an OR or AND condition respectively. To select only specific rows, use the select() function as below:
+```php
+$query->table('users')->select(array('username', 'email'))->execute();
+```
+The above code creates the following MySQL statement:
+```mysql
+SELECT username, email FROM users
+```
 
 SELECT queries can order be set with order_by() and/or limit() functions which will append an ORDER BY or LIMIT statement to the query:
 ```php
@@ -39,6 +46,19 @@ The corresponding MySQL statement that the above code builds is:
 SELECT * FROM users WHERE age > 20 ORDER BY age ASC LIMIT 5
 ```
 order_by() accepts 2 arguments: column name, and order. The column name is the column by which the data will be sorted, and the order is either 'ASC' for ascending, or 'DESC' for descending.
+```php
+$myData = $query->table('users')->where('age', '>', 20)
+								->or_where(function() use($query) {
+									$query->where('name', '=', 'Austin');
+									$query->or_where('name', '=', 'Bailey');
+								})
+								->execute();
+```
+The above code shows how to nest WHERE statements. It is important to include the use() function, as well as making the first where() call a plain where (as opposed to or_where or and_where). The corresponding MySQL statement is:
+```mysql
+SELECT * FROM users WHERE age > 20 OR (name = Austin OR name = Bailey)
+```
+
 
 #### INSERT queries: ####
 
@@ -78,6 +98,6 @@ The order_by() and limit() functions described in the SELECT queries section als
 - [X] Delete queries
 - [ ] Update queries
 - [ ] Error reporting
-- [ ] Nested WHERE conditions
+- [X] Nested WHERE conditions
 
 And more to come.

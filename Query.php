@@ -302,19 +302,12 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$data = $query->table('users')->select(array('id', 'name'))
-							  ->where('name', '=', 'Austin')
-
-							  ->and_where(function() use($query) {
-								$query->where('name', '=', 'Peter');
-								$query->and_where('name', '=', 'Emaad');
-
-								$query->or_where(function() use($query) {
-									$query->where('name', '=', 'Jeff');
-									$query->and_where('id', '=', '5');
-								});
-							  })
-							  ->execute();
+$myData = $query->table('users')->where('age', '>', 20)
+								->or_where(function() use($query) {
+									$query->where('name', '=', 'Austin');
+									$query->or_where('name', '=', 'Bailey');
+								})
+								->execute();
 
 //var_dump($data);
 
