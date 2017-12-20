@@ -76,7 +76,11 @@ class Query {
 	public function where($column, $condition, $value) {
 		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
 
-		$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
+		if (strpos($this->sql, "SELECT") > -1) {
+			$this->sql = $this->sql . "$column $condition ?";
+		} else {
+			$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
+		}
 
 		$this->data[] = $value;
 		$this->fields[] = $column;
@@ -89,20 +93,40 @@ class Query {
 
 	public function or_where($column, $condition, $value) {
 		// Append an additional WHERE clause with OR connection
-		$this->sql = $this->sql . " OR $column $condition ?";
 
-		$this->data[] = $value;
-		$this->fields[] = $column;
+		if (func_num_args() > 1) {
+			$this->sql = $this->sql . " OR $column $condition ?";
+
+			$this->data[] = $value;
+			$this->fields[] = $column;
+
+		} else {
+			$this->sql = $this->sql . " OR (";
+
+			call_user_func($column);
+
+			$this->sql = $this->sql . ")";
+		}
 
 		return $this;
 	}
 
 	public function and_where($column, $condition, $value) {
 		// Append an additional WHERE clause with AND connection
-		$this->sql = $this->sql . " AND $column $condition ?";
 
-		$this->data[] = $value;
-		$this->fields[] = $column;
+		if (func_num_args() > 1) {
+			$this->sql = $this->sql . " AND $column $condition ?";
+
+			$this->data[] = $value;
+			$this->fields[] = $column;
+
+		} else {
+			$this->sql = $this->sql . " AND (";
+
+			call_user_func($column);
+
+			$this->sql = $this->sql . ")";
+		}
 
 		return $this;
 
@@ -126,6 +150,8 @@ class Query {
 		// Returns array of selected rows
 		
 		$sql = $this->sql;
+
+		echo "$sql";
 
 		if ($sql == "") $sql = "SELECT * FROM $this->table";
 
@@ -254,12 +280,15 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$data = $query->table('lifts')
-			->delete('reps', '=', 1)
-			->or_where('weight', '<', 100.0)
-			->execute();
+$data = $query->table('users')->where('name', '=', 'Austin')
+							->and_where(function() use($query) {
+								$query->where('name', '=', 'Peter');
+								$query->and_where('name', '=', 'Emaad');
+							})
+							->execute();
 
-var_dump($data);
+//var_dump($data);
+
 
 
 
