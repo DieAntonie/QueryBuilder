@@ -2,13 +2,22 @@
 
 class Query {
 
+	// mysqli object used to connect to DB
 	private $mysqli = null;
+	// sql statement string which will be executed
 	private $sql = '';
+	// the datatype of each column in the table gathered using getTypes(). This is used in prepared statements
 	private $datatypes = array();
+	// an array holding the values entered by the user, to be bound to the prepared statement before execution
 	private $data = array();
+	// the columns that correspond to the items in $data
 	private $fields = array();
+	// the name of the table 
 	private $table = '';
+	// s, i, d, u for select, insert, delete, update respectively. 
 	private $command = '';
+	// list of columns for select
+	private $columns_for_select = '*';
 
 	public function __construct($mysqli = null) {
 		// construct with mysqli object
@@ -73,13 +82,26 @@ class Query {
 
 	/* **** SELECT **** */
 
+
+	public function select($columns) {
+		$this->columns_for_select = "";
+		
+		for ($i=0; $i < count($columns) - 1; $i++) { 
+			$this->columns_for_select = $this->columns_for_select . $columns[$i] . ", ";
+		}
+
+		$this->columns_for_select = $this->columns_for_select . $columns[count($columns)-1];
+
+		return $this;
+	}
+
 	public function where($column, $condition, $value) {
 		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
 
 		if (strpos($this->sql, "SELECT") > -1) {
 			$this->sql = $this->sql . "$column $condition ?";
 		} else {
-			$this->sql = "SELECT * FROM $this->table WHERE $column $condition ?";
+			$this->sql = "SELECT $this->columns_for_select FROM $this->table WHERE $column $condition ?";
 		}
 
 		$this->data[] = $value;
@@ -280,12 +302,19 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$data = $query->table('users')->where('name', '=', 'Austin')
-							->and_where(function() use($query) {
+$data = $query->table('users')->select(array('id', 'name'))
+							  ->where('name', '=', 'Austin')
+
+							  ->and_where(function() use($query) {
 								$query->where('name', '=', 'Peter');
 								$query->and_where('name', '=', 'Emaad');
-							})
-							->execute();
+
+								$query->or_where(function() use($query) {
+									$query->where('name', '=', 'Jeff');
+									$query->and_where('id', '=', '5');
+								});
+							  })
+							  ->execute();
 
 //var_dump($data);
 
