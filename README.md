@@ -48,11 +48,11 @@ SELECT * FROM users WHERE age > 20 ORDER BY age ASC LIMIT 5
 order_by() accepts 2 arguments: column name, and order. The column name is the column by which the data will be sorted, and the order is either 'ASC' for ascending, or 'DESC' for descending.
 ```php
 $myData = $query->table('users')->where('age', '>', 20)
-								->or_where(function() use($query) {
-									$query->where('name', '=', 'Austin');
-									$query->or_where('name', '=', 'Bailey');
-								})
-								->execute();
+					->or_where(function() use($query) {
+						$query->where('name', '=', 'Austin');
+						$query->or_where('name', '=', 'Bailey');
+					})
+					->execute();
 ```
 The above code shows how to nest WHERE statements. It is important to include the use() function, as well as making the first where() call a plain where (as opposed to or_where or and_where). The corresponding MySQL statement is:
 ```mysql
