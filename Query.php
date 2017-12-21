@@ -168,6 +168,12 @@ class Query {
 		return $this;
 	}
 
+	public function group_by($column) {
+		$this->sql = $this->sql + " GROUP BY $column";
+
+		return $this;
+	}
+
 	private function exec_select() {
 		// Returns array of selected rows
 		
