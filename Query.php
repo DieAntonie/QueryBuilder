@@ -169,6 +169,7 @@ class Query {
 	}
 
 	public function group_by($column) {
+		// Group by $column
 		$this->sql = $this->sql + " GROUP BY $column";
 
 		return $this;
@@ -299,7 +300,7 @@ class Query {
 
 }
 
-$servername = "localhost";
+/*$servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "liftapp";
@@ -315,7 +316,7 @@ $myData = $query->table('users')->where('age', '>', 20)
 								})
 								->execute();
 
-//var_dump($data);
+//var_dump($data);*/
 
 
 
