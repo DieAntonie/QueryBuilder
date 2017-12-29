@@ -297,12 +297,27 @@ class Query {
 		return $this;
 
 	}
+
+	function exec_update() {
+		$stmt = $this->mysqli->prepare($this->sql);
+
+		$datatypes = '';
+
+		foreach ($this->fields as $field) {
+			$datatypes = $datatypes . $this->datatypes[$field];
+		}
+
+		$stmt->bind_param($datatypes, ...$this->data);
+
+		return $stmt->execute();
+	}
 	/* **** EXECUTE **** */
 
 	public function execute() {
 		if ($this->command == 's')  return $this->exec_select();
 		else if ($this->command == 'i') return $this->exec_insert();
 		else if ($this->command == 'd') return $this->exec_delete();
+		else if ($this->command == 'u') return $this->exec_update();
 		echo "$this->sql";
 	}
 
@@ -317,7 +332,7 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$query->table('users')->update(array('id', 'name'), array('0', 'Austin'))->where('name', '!=', 'Austin')->execute();
+$query->table('users')->update(array('username', 'name'), array('updatedUsername', 'updatedName'))->where('name', '=', 'testUser')->execute();
 
 //var_dump($data);
 
