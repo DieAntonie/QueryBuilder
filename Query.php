@@ -100,13 +100,16 @@ class Query {
 
 		if (strpos($this->sql, "SELECT") > -1) {
 			$this->sql = $this->sql . "$column $condition ?";
+			$this->command = "s";
+		} else if ($this->command == 'u') {
+			$this->sql = $this->sql . " WHERE $column $condition ?";
 		} else {
 			$this->sql = "SELECT $this->columns_for_select FROM $this->table WHERE $column $condition ?";
+			$this->command = "s";
 		}
 
 		$this->data[] = $value;
 		$this->fields[] = $column;
-		$this->command = "s";
 
 		return $this;
 	}
@@ -291,7 +294,7 @@ class Query {
 			$this->fields[] = $columns[$i];
 		}
 
-		echo "$this->sql";
+		return $this;
 
 	}
 	/* **** EXECUTE **** */
@@ -300,6 +303,7 @@ class Query {
 		if ($this->command == 's')  return $this->exec_select();
 		else if ($this->command == 'i') return $this->exec_insert();
 		else if ($this->command == 'd') return $this->exec_delete();
+		echo "$this->sql";
 	}
 
 }
@@ -313,7 +317,7 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$query->table('users')->update(array('id', 'name'), array('0', 'Austin'));
+$query->table('users')->update(array('id', 'name'), array('0', 'Austin'))->where('name', '!=', 'Austin')->execute();
 
 //var_dump($data);
 
