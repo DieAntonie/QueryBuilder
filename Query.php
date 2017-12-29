@@ -180,8 +180,6 @@ class Query {
 		
 		$sql = $this->sql;
 
-		echo "$sql";
-
 		if ($sql == "") $sql = "SELECT * FROM $this->table";
 
 		$stmt = $this->mysqli->prepare($sql);
@@ -281,14 +279,20 @@ class Query {
 
 	/* **** UPDATE **** */
 
-	function update($column, $value) {
+	function update($columns, $values) {
 
 		$this->command = 'u';
-		$this->sql = "UPDATE $column = ?";
-		$this->data[] = $value;
-		$this->fields[] = $column;
+		$this->sql = "UPDATE $this->table SET $columns[0] = ?";
+		$this->data[] = $values[0];
+		$this->fields[] = $columns[0];
+		for ($i=1; $i < count($columns); $i++) { 
+			$this->sql = $this->sql . ", $columns[$i] = ?";
+			$this->data[] = $values[$i];
+			$this->fields[] = $columns[$i];
+		}
 
-		//todo
+		echo "$this->sql";
+
 	}
 	/* **** EXECUTE **** */
 
@@ -300,7 +304,7 @@ class Query {
 
 }
 
-/*$servername = "localhost";
+$servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "liftapp";
@@ -309,14 +313,9 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$myData = $query->table('users')->where('age', '>', 20)
-								->or_where(function() use($query) {
-									$query->where('name', '=', 'Austin');
-									$query->or_where('name', '=', 'Bailey');
-								})
-								->execute();
+$query->table('users')->update(array('id', 'name'), array('0', 'Austin'));
 
-//var_dump($data);*/
+//var_dump($data);
 
 
 
