@@ -91,13 +91,21 @@ The corresponding MySQL statement that this above code builds is:
 DELETE FROM users WHERE id = 1 AND name = 'Austin';
 ```
 The order_by() and limit() functions described in the SELECT queries section also apply to delete() queries.
+#### UPDATE queries: ####
+```php
+$query->table('users')->update(array('name', 'age'), array('Austin', '21'))->execute();
+```
+The corresponding MySQL statement that this above code builds is:
+```mysql
+UPDATE users SET name = 'Austin', age = 21
+```
+Note: Update queries can also use the where(), or_where(), and and_where() functions above.
 ## In Development ##
 
 - [X] Select queries
 - [X] Insert queries
 - [X] Delete queries
-- [ ] Update queries
-- [ ] Error reporting
+- [X] Update queries
 - [X] Nested WHERE conditions
 
 And more to come.

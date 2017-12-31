@@ -95,89 +95,6 @@ class Query {
 		return $this;
 	}
 
-	public function where($column, $condition, $value) {
-		// Set $sql to SELECT * FROM $this->table WHERE $column $condition $value
-
-		if (strpos($this->sql, "SELECT") > -1) {
-			$this->sql = $this->sql . "$column $condition ?";
-			$this->command = "s";
-		} else if ($this->command == 'u') {
-			$this->sql = $this->sql . " WHERE $column $condition ?";
-		} else {
-			$this->sql = "SELECT $this->columns_for_select FROM $this->table WHERE $column $condition ?";
-			$this->command = "s";
-		}
-
-		$this->data[] = $value;
-		$this->fields[] = $column;
-
-		return $this;
-	}
-
-	/* or_where and and_where can both be used to append conditions to DELETE queries */
-
-	public function or_where($column, $condition, $value) {
-		// Append an additional WHERE clause with OR connection
-
-		if (func_num_args() > 1) {
-			$this->sql = $this->sql . " OR $column $condition ?";
-
-			$this->data[] = $value;
-			$this->fields[] = $column;
-
-		} else {
-			$this->sql = $this->sql . " OR (";
-
-			call_user_func($column);
-
-			$this->sql = $this->sql . ")";
-		}
-
-		return $this;
-	}
-
-	public function and_where($column, $condition, $value) {
-		// Append an additional WHERE clause with AND connection
-
-		if (func_num_args() > 1) {
-			$this->sql = $this->sql . " AND $column $condition ?";
-
-			$this->data[] = $value;
-			$this->fields[] = $column;
-
-		} else {
-			$this->sql = $this->sql . " AND (";
-
-			call_user_func($column);
-
-			$this->sql = $this->sql . ")";
-		}
-
-		return $this;
-
-	}
-
-	public function order_by($column, $order) {
-		// Order query by $column in order of $order
-		$this->sql = $this->sql . " ORDER BY $column $order"; 
-
-		return $this;
-	}
-
-	public function limit($n) {
-		// Limit query to $n results max
-		$this->sql = $this->sql . " LIMIT $n";
-
-		return $this;
-	}
-
-	public function group_by($column) {
-		// Group by $column
-		$this->sql = $this->sql + " GROUP BY $column";
-
-		return $this;
-	}
-
 	private function exec_select() {
 		// Returns array of selected rows
 		
@@ -311,6 +228,97 @@ class Query {
 
 		return $stmt->execute();
 	}
+
+	/* **** Multi-purpose **** 
+	These functions can be used on multiple types of MySQL statements 
+	*/
+
+
+	public function where($column, $condition, $value) {
+		// If called after table() or select() : Set $sql to SELECT [tables] FROM $this->table WHERE $column $condition $value
+		// If called after update() or delete() set $sql = $sql . " WHERE $column $condition $value"
+
+		if (strpos($this->sql, "SELECT") > -1) {
+			$this->sql = $this->sql . "$column $condition ?";
+			$this->command = "s";
+		} else if ($this->command == 'u') {
+			$this->sql = $this->sql . " WHERE $column $condition ?";
+		} else {
+			$this->sql = "SELECT $this->columns_for_select FROM $this->table WHERE $column $condition ?";
+			$this->command = "s";
+		}
+
+		$this->data[] = $value;
+		$this->fields[] = $column;
+
+		return $this;
+	}
+
+	/* or_where and and_where can both be used to append conditions to DELETE queries */
+
+	public function or_where($column, $condition, $value) {
+		// Append an additional WHERE clause with OR connection
+		// Must always be called after a where(), and_where(), or or_where()
+
+		if (func_num_args() > 1) {
+			$this->sql = $this->sql . " OR $column $condition ?";
+
+			$this->data[] = $value;
+			$this->fields[] = $column;
+
+		} else {
+			$this->sql = $this->sql . " OR (";
+
+			call_user_func($column);
+
+			$this->sql = $this->sql . ")";
+		}
+
+		return $this;
+	}
+
+	public function and_where($column, $condition, $value) {
+		// Append an additional WHERE clause with AND connection
+		// Must always be called after a where(), and_where(), or or_where()
+
+		if (func_num_args() > 1) {
+			$this->sql = $this->sql . " AND $column $condition ?";
+
+			$this->data[] = $value;
+			$this->fields[] = $column;
+
+		} else {
+			$this->sql = $this->sql . " AND (";
+
+			call_user_func($column);
+
+			$this->sql = $this->sql . ")";
+		}
+
+		return $this;
+
+	}
+
+	public function order_by($column, $order) {
+		// Order query by $column in order of $order
+		$this->sql = $this->sql . " ORDER BY $column $order"; 
+
+		return $this;
+	}
+
+	public function limit($n) {
+		// Limit query to $n results max
+		$this->sql = $this->sql . " LIMIT $n";
+
+		return $this;
+	}
+
+	public function group_by($column) {
+		// Group by $column
+		$this->sql = $this->sql + " GROUP BY $column";
+
+		return $this;
+	}
 	/* **** EXECUTE **** */
 
 	public function execute() {
@@ -318,7 +326,6 @@ class Query {
 		else if ($this->command == 'i') return $this->exec_insert();
 		else if ($this->command == 'd') return $this->exec_delete();
 		else if ($this->command == 'u') return $this->exec_update();
-		echo "$this->sql";
 	}
 
 }
@@ -332,7 +339,7 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
 
-$query->table('users')->update(array('username', 'name'), array('updatedUsername', 'updatedName'))->where('name', '=', 'testUser')->execute();
+$query->table('users')->update(array('username', 'name'), array('updatedUsername', 'updatedName'))->where('name', '=', 'shmorgle')->execute();
 
 //var_dump($data);
 
