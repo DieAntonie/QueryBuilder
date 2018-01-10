@@ -229,6 +229,23 @@ class Query {
 		return $stmt->execute();
 	}
 
+	/* **** Search **** */
+
+	//executes with exec_select();
+	public function search($column, $phrase) {
+		$this->sql = "SELECT * FROM foods WHERE MATCH($column) AGAINST(?) ORDER BY MATCH($column) AGAINST(?) DESC";
+
+		$this->command = 's';
+
+		$this->data[] = urldecode($phrase);
+		$this->data[] = urldecode($phrase);
+		$this->fields[] = $column;
+		$this->fields[] = $column;
+
+		return $this;
+
+	}
+
 	/* **** Multi-purpose **** 
 	These functions can be used on multiple types of MySQL statements 
 	*/
@@ -319,6 +336,7 @@ class Query {
 
 		return $this;
 	}
+
 	/* **** EXECUTE **** */
 
 	public function execute() {
@@ -338,8 +356,6 @@ $dbname = "liftapp";
 $mysqli = new mysqli($servername, $username, $password, $dbname);
 
 $query = new Query($mysqli);
-
-$query->table('users')->update(array('username', 'name'), array('updatedUsername', 'updatedName'))->where('name', '=', 'shmorgle')->execute();
 
 //var_dump($data);
 
