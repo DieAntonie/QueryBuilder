@@ -348,14 +348,14 @@ class Query {
 
 }
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "liftapp";
+// $servername = "localhost";
+// $username = "root";
+// $password = "";
+// $dbname = "liftapp";
 
-$mysqli = new mysqli($servername, $username, $password, $dbname);
+// $mysqli = new mysqli($servername, $username, $password, $dbname);
 
-$query = new Query($mysqli);
+// $query = new Query($mysqli);
 
 //var_dump($data);
 
